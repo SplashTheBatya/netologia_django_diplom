@@ -1,12 +1,7 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-
-# Create your models here.
+from django.contrib.auth.models import User
 from django.db.models import CASCADE
-
-
-class User(models.Model):
-    name = models.CharField(max_length=255)
 
 
 class Product(models.Model):
@@ -45,9 +40,10 @@ class OrderStatusChoices(models.TextChoices):
 class Order(models.Model):
     user_id = models.ForeignKey(User, on_delete=CASCADE)
     position = models.ManyToManyField(Product, through='OrderProduct', related_name='position')
-    status = models.TimeField(
+    status = models.CharField(
         choices=OrderStatusChoices.choices,
-        default=OrderStatusChoices.NEW
+        default=OrderStatusChoices.NEW,
+        max_length=255
     )
     created_at = models.TimeField(
         auto_now_add=True
@@ -55,6 +51,7 @@ class Order(models.Model):
     updated_at = models.TimeField(
         auto_now=True
     )
+    summary = models.PositiveIntegerField()
 
 
 class OrderProduct(models.Model):
