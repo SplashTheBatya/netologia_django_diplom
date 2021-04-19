@@ -8,26 +8,38 @@ from marketplace.models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username')
+        fields = ('id',)
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('id', 'name', 'description', 'price',
-                  'created_at', 'updated_at')
+        fields = '__all__'
 
 
-# TODO: Rework, add user_id and product_id
+# TODO: Try to return user_id, problem with user serializer
 class ReviewSerializer(serializers.ModelSerializer):
+    user_id = UserSerializer(
+        read_only=True
+    )
+
     class Meta:
         model = Review
-        fields = ('id', 'review_text', 'rating',
-                  'created_at', 'updated_at')
+        fields = '__all__'
 
+    def to_representation(self, instance):
+        self.fields['product'] = ProductSerializer(read_only=True)
+        return super(ReviewSerializer, self).to_representation(instance)
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context["request"].user
+        return super().create(validated_data)
+
+    # TODO: Test validations, may still not be correct
     def validate(self, data):
+        print(data)
         if self.instance is None:
-            if Review.objects.filter(user_id=self.context["request"].user).count() >= 1:
+            if Review.objects.filter(user_id=self.context["request"].user).filter(product_id=data['product'].id).count()>= 1:
                 raise ValidationError
         else:
             pass
@@ -41,6 +53,7 @@ class OrderProductSerializer(serializers.ModelSerializer):
         fields = ('Product', 'Order', 'amount')
 
 
+# TODO: Try use experience from ReviewSerializer
 class OrderSerializer(serializers.ModelSerializer):
     position = OrderProductSerializer(
         source='orederprodust_set',
@@ -64,6 +77,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return instance
 
 
+# TODO: What can be wrong here...
 class CompilationSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
 

@@ -1,12 +1,12 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db.models import CASCADE
 
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.CharField(max_length=510)
     price = models.IntegerField()
     created_at = models.TimeField(
         auto_now_add=True
@@ -17,8 +17,15 @@ class Product(models.Model):
 
 
 class Review(models.Model):
-    user_id = models.ForeignKey(User, on_delete=CASCADE)
-    product_id = models.ForeignKey(Product, on_delete=CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=CASCADE
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=CASCADE,
+        related_name='review_product'
+    )
     review_text = models.TextField()
     rating = models.PositiveSmallIntegerField(
         validators=[MaxValueValidator(5), MinValueValidator(1)]
@@ -38,7 +45,10 @@ class OrderStatusChoices(models.TextChoices):
 
 
 class Order(models.Model):
-    user_id = models.ForeignKey(User, on_delete=CASCADE)
+    user_id = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=CASCADE,
+        )
     position = models.ManyToManyField(Product, through='OrderProduct', related_name='position')
     status = models.CharField(
         choices=OrderStatusChoices.choices,

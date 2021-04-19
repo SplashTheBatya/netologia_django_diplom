@@ -4,7 +4,13 @@ from marketplace.models import *
 
 # TODO: Set filter for Product
 class ProductFilter(filters.FilterSet):
-    pass
+    price = filters.ModelMultipleChoiceFilter(
+        field_name="price",
+        to_field_name="price",
+        queryset=Product.objects.all()
+    )
+    description = filters.CharFilter(lookup_expr='contains')
+    name = filters.CharFilter(lookup_expr='exact')
 
 
 class ReviewFilter(filters.FilterSet):

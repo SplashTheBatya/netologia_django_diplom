@@ -1,0 +1,9 @@
+DELETE localhost:8000/api/v1/product-reviews/?id=7
+Content-Type: application/json
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+{
+    "product_id": 2,
+    "review_text": "ababa",
+    "rating": 5
+}

@@ -13,10 +13,10 @@ class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-    filter_backends = [filters.OrderingFilter]
-    ordering_fields = ['price', 'name']
-    ordering = ['price']
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductFilter
 
+    # TODO: Reformat permissions
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update"]:
             return [IsAdminUser()]
@@ -31,11 +31,12 @@ class ReviewViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ReviewFilter
 
+    # TODO: Reformat permissions
     def get_permissions(self):
         if self.action in ["create"]:
-            return [IsAuthenticated()]
+            return [IsAdminUser(), IsAuthenticated()]
         elif self.action in ["update", "partial_update", "destroy"]:
-            return [IsOwner()]
+            return [IsOwner(), IsAdminUser()]
         else:
             return [AllowAny()]
 
@@ -48,6 +49,7 @@ class OrderViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = OrderFilter
 
+    # TODO: Reformat permissions
     def get_permissions(self):
         if self.action in ["create"]:
             return [IsAuthenticated()]
@@ -64,6 +66,7 @@ class CompilationViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = CompilationFilter
 
+    # TODO: Reformat permissions
     def get_permissions(self):
         if self.action not in ["list", "retrieve"]:
             return [AllowAny()]
