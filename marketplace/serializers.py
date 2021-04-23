@@ -8,7 +8,7 @@ from marketplace.models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id',)
+        fields = ('id', 'username')
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -17,18 +17,14 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# TODO: Try to return user_id, problem with user serializer
 class ReviewSerializer(serializers.ModelSerializer):
-    user_id = UserSerializer(
-        read_only=True
-    )
-
     class Meta:
         model = Review
         fields = '__all__'
 
     def to_representation(self, instance):
         self.fields['product'] = ProductSerializer(read_only=True)
+        self.fields['user'] = UserSerializer(read_only=True)
         return super(ReviewSerializer, self).to_representation(instance)
 
     def create(self, validated_data):
@@ -37,44 +33,50 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     # TODO: Test validations, may still not be correct
     def validate(self, data):
-        print(data)
         if self.instance is None:
-            if Review.objects.filter(user_id=self.context["request"].user).filter(product_id=data['product'].id).count()>= 1:
-                raise ValidationError
+            if Review.objects.filter(user=self.context["request"].user).filter(
+                    product=data['product'].id).count() >= 1:
+                print(Review.objects.filter(user=self.context["request"].user).count())
+                raise ValidationError('Нельзя')
         else:
             pass
 
         return data
 
 
+# TODO: Calibrate serializers
 class OrderProductSerializer(serializers.ModelSerializer):
+    Product = ProductSerializer(many=True, source='product')
+    amount = serializers.IntegerField()
+
     class Meta:
         model = OrderProduct
-        fields = ('Product', 'Order', 'amount')
+        fields = ('Product', 'amount')
 
 
-# TODO: Try use experience from ReviewSerializer
 class OrderSerializer(serializers.ModelSerializer):
-    position = OrderProductSerializer(
-        source='orederprodust_set',
-        read_only=True
-    )
+    summary = serializers.HiddenField(default=0)
+    position = OrderProductSerializer(many=True, source='order_product')
 
     class Meta:
         model = Order
-        fields = ('id', 'position', 'status',
-                  'created_at', 'updated_at', 'amount')
+        fields = '__all__'
 
     def create(self, validated_data):
-        position = validated_data.pop('position')
-
+        order = Order.objects.create(**validated_data)
         summary = 0
-        for pos in position:
-            summary += pos.amount * OrderProduct.Product.price
-        instance = Order.objects.create(summary=summary, **validated_data)
-        instance.position = position
-
-        return instance
+        if "position" in self.initial_data:
+            positions = self.initial_data.get("position")
+            for pos in positions:
+                id = pos.get("id")
+                amount = pos.get("amount")
+                product_instance = Product.objects.get(pk=id)
+                product_price = Product.objects.get(pk=id).price
+                summary += amount * product_price
+                OrderProduct(Order=order, Product=product_instance, amount=amount).save()
+        order.summary = summary
+        order.save()
+        return order
 
 
 # TODO: What can be wrong here...

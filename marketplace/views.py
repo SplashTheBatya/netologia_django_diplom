@@ -69,6 +69,6 @@ class CompilationViewSet(ModelViewSet):
     # TODO: Reformat permissions
     def get_permissions(self):
         if self.action not in ["list", "retrieve"]:
-            return [AllowAny()]
-        else:
             return [IsAdminUser()]
+        else:
+            return [AllowAny()]

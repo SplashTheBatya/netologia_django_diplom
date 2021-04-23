@@ -45,7 +45,7 @@ class OrderStatusChoices(models.TextChoices):
 
 
 class Order(models.Model):
-    user_id = models.ForeignKey(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=CASCADE,
         )
@@ -61,14 +61,14 @@ class Order(models.Model):
     updated_at = models.TimeField(
         auto_now=True
     )
-    summary = models.PositiveIntegerField()
+    summary = models.PositiveIntegerField(null=True)
 
 
 class OrderProduct(models.Model):
     Order = models.ForeignKey(
         Order,
         on_delete=CASCADE,
-        related_name='order'
+        related_name='order_product'
     )
     Product = models.ForeignKey(
         Product,
