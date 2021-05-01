@@ -1,9 +1,98 @@
-DELETE localhost:8000/api/v1/product-reviews/?id=7
+GET localhost:8000/api/v1/products/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+###
+
+POST localhost:8000/api/v1/products/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+{
+  "name": "NewProduct",
+  "description": "Something about",
+  "price": 500000
+}
+
+###
+
+POST localhost:8000/api/v1/products/
 Content-Type: application/json
 Authorization: Token e10f83219d36214193653918f1d834537777dec4
 
 {
-    "product_id": 2,
-    "review_text": "ababa",
-    "rating": 5
+  "name": "NewProduct",
+  "description": "Something about",
+  "price": 500000
 }
+
+###
+
+PATCH localhost:8000/api/v1/products/7/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+{
+  "price": 20000
+}
+###
+
+PATCH localhost:8000/api/v1/products/7/
+Content-Type: application/json
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+{
+  "price": 20000
+}
+
+###
+DELETE localhost:8000/api/v1/products/7/
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+###
+
+DELETE localhost:8000/api/v1/products/7/
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
+
+GET localhost:8000/api/v1/product-reviews/
+
+###
+
+POST localhost:8000/api/v1/product-reviews/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+{
+   "product": 3,
+   "review_text": "Review Text",
+   "rating": 4,
+   "user": 2
+}
+###
+
+PATCH localhost:8000/api/v1/product-reviews/13/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+{
+  "rating": 1
+}
+
+###
+DELETE localhost:8000/api/v1/product-reviews/13/
+Content-Type: application/json
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
+
+DELETE localhost:8000/api/v1/product-reviews/13/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+###
+
+GET  localhost:8000/api/v1/orders/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e

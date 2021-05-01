@@ -44,9 +44,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
 
-# TODO: Calibrate serializers
 class OrderProductSerializer(serializers.ModelSerializer):
-    Product = ProductSerializer(many=True, source='product')
     amount = serializers.IntegerField()
 
     class Meta:
@@ -62,16 +60,21 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = '__all__'
 
+    def to_representation(self, instance):
+        self.fields['summary'] = serializers.IntegerField()
+        return super(OrderSerializer, self).to_representation(instance)
+
     def create(self, validated_data):
+        order_product = validated_data.pop("order_product")
         order = Order.objects.create(**validated_data)
         summary = 0
         if "position" in self.initial_data:
             positions = self.initial_data.get("position")
             for pos in positions:
-                id = pos.get("id")
+                id = pos.get("Product")
                 amount = pos.get("amount")
                 product_instance = Product.objects.get(pk=id)
-                product_price = Product.objects.get(pk=id).price
+                product_price = product_instance.price
                 summary += amount * product_price
                 OrderProduct(Order=order, Product=product_instance, amount=amount).save()
         order.summary = summary
@@ -81,9 +84,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
 # TODO: What can be wrong here...
 class CompilationSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(read_only=True)
+
+    def to_representation(self, instance):
+        self.fields['product'] = ProductSerializer(read_only=True, many=True)
+        return super(CompilationSerializer, self).to_representation(instance)
 
     class Meta:
         model = Compilation
-        fields = ('heading', 'description', 'product',
-                  'created_at', 'updated_at')
+        fields = '__all__'

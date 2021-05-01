@@ -8,7 +8,6 @@ from marketplace.serializers import *
 from marketplace.filters import *
 
 
-# TODO: Rework, add custom filter
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -16,9 +15,8 @@ class ProductViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProductFilter
 
-    # TODO: Reformat permissions
     def get_permissions(self):
-        if self.action in ["create", "update", "partial_update"]:
+        if self.action in ["post", "create", "update", "partial_update", "destroy"]:
             return [IsAdminUser()]
         else:
             return [AllowAny()]
@@ -31,17 +29,15 @@ class ReviewViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = ReviewFilter
 
-    # TODO: Reformat permissions
     def get_permissions(self):
         if self.action in ["create"]:
-            return [IsAdminUser(), IsAuthenticated()]
+            return [IsAuthenticated()]
         elif self.action in ["update", "partial_update", "destroy"]:
-            return [IsOwner(), IsAdminUser()]
+            return [IsOwner()]
         else:
             return [AllowAny()]
 
 
-# TODO: Try and rework
 class OrderViewSet(ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -49,14 +45,22 @@ class OrderViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = OrderFilter
 
-    # TODO: Reformat permissions
+    # TODO: Add list method, maybe else method
+    def list(self, request, *args, **kwargs):
+        if self.action in ["list"]:
+            if IsAdminUser():
+                return super().list(request)
+            else:
+                queryset = self.filter_queryset(self.get_queryset())
+                queryset.filter()
+
     def get_permissions(self):
         if self.action in ["create"]:
             return [IsAuthenticated()]
-        elif self.action in ["list", "retrieve", "update"]:
+        elif self.action in ["list", "partial_update", "update"]:
             return [IsAdminUser()]
-        else:
-            return [AllowAny()]
+        elif self.action in ["retrieve"]:
+            return [IsOwner(), IsAdminUser()]
 
 
 class CompilationViewSet(ModelViewSet):

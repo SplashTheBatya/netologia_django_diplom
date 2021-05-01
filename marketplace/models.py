@@ -15,6 +15,9 @@ class Product(models.Model):
         auto_now=True
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Review(models.Model):
     user = models.ForeignKey(
@@ -36,6 +39,9 @@ class Review(models.Model):
     updated_at = models.TimeField(
         auto_now=True
     )
+
+    def __str__(self):
+        return self.product.name
 
 
 class OrderStatusChoices(models.TextChoices):
@@ -88,3 +94,6 @@ class Compilation(models.Model):
     updated_at = models.TimeField(
         auto_now=True
     )
+
+    def __str__(self):
+        return self.heading
