@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import User
+from rest_framework.fields import CurrentUserDefault
 
 from marketplace.models import *
 
@@ -18,6 +19,8 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    user = UserSerializer(default=CurrentUserDefault())
+
     class Meta:
         model = Review
         fields = '__all__'
@@ -31,12 +34,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         validated_data['user'] = self.context["request"].user
         return super().create(validated_data)
 
-    # TODO: Test validations, may still not be correct
     def validate(self, data):
         if self.instance is None:
             if Review.objects.filter(user=self.context["request"].user).filter(
                     product=data['product'].id).count() >= 1:
-                print(Review.objects.filter(user=self.context["request"].user).count())
                 raise ValidationError('Нельзя')
         else:
             pass
@@ -53,7 +54,9 @@ class OrderProductSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    user = UserSerializer(default=CurrentUserDefault())
     summary = serializers.HiddenField(default=0)
+    status = serializers.CharField(default="NEW")
     position = OrderProductSerializer(many=True, source='order_product')
 
     class Meta:
@@ -82,7 +85,6 @@ class OrderSerializer(serializers.ModelSerializer):
         return order
 
 
-# TODO: What can be wrong here...
 class CompilationSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):

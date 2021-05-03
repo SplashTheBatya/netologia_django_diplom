@@ -45,22 +45,22 @@ class OrderViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = OrderFilter
 
-    # TODO: Add list method, maybe else method
-    def list(self, request, *args, **kwargs):
-        if self.action in ["list"]:
-            if IsAdminUser():
-                return super().list(request)
-            else:
-                queryset = self.filter_queryset(self.get_queryset())
-                queryset.filter()
+    def filter_queryset(self, queryset):
+        return queryset.filter(**self.request.data)
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        else:
+            return Order.objects.all().filter(user=self.request.user)
 
     def get_permissions(self):
         if self.action in ["create"]:
             return [IsAuthenticated()]
-        elif self.action in ["list", "partial_update", "update"]:
-            return [IsAdminUser()]
         elif self.action in ["retrieve"]:
             return [IsOwner(), IsAdminUser()]
+        else:
+            return [AllowAny()]
 
 
 class CompilationViewSet(ModelViewSet):

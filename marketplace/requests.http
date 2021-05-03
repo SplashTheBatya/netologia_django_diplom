@@ -65,10 +65,9 @@ Content-Type: application/json
 Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
 
 {
-   "product": 3,
+   "product": 5,
    "review_text": "Review Text",
-   "rating": 4,
-   "user": 2
+   "rating": 4
 }
 ###
 
@@ -96,3 +95,61 @@ Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
 GET  localhost:8000/api/v1/orders/
 Content-Type: application/json
 Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+###
+
+GET  localhost:8000/api/v1/orders/
+Content-Type: application/json
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
+
+POST localhost:8000/api/v1/orders/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+{
+  "position": [{"Product": 2, "amount": 2},{"Product": 1, "amount": 3}]
+}
+
+
+
+###
+
+GET localhost:8000/api/v1/product-collections/
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+###
+GET localhost:8000/api/v1/product-collections/
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
+POST localhost:8000/api/v1/product-collections/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+{
+  "heading": "Compilation 4",
+  "description": "New compilation",
+  "product": [1,4,5,7]
+}
+
+###
+POST localhost:8000/api/v1/product-collections/
+Content-Type: application/json
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+{
+  "heading": "Compilation 4",
+  "description": "New compilation",
+  "product": [1,4,5,7]
+}
+
+###
+
+DELETE localhost:8000/api/v1/product-collections/4/
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+###
+DELETE localhost:8000/api/v1/product-collections/4/
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
