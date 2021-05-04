@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import *
 from rest_framework.viewsets import ModelViewSet
@@ -44,23 +43,16 @@ class OrderViewSet(ModelViewSet):
 
     filter_backends = [DjangoFilterBackend]
     filterset_class = OrderFilter
+    permission_classes = [IsAuthenticated]
 
     def filter_queryset(self, queryset):
-        return queryset.filter(**self.request.data)
+        return super().filter_queryset(queryset)
 
     def get_queryset(self):
         if self.request.user.is_staff:
             return Order.objects.all()
         else:
             return Order.objects.all().filter(user=self.request.user)
-
-    def get_permissions(self):
-        if self.action in ["create"]:
-            return [IsAuthenticated()]
-        elif self.action in ["retrieve"]:
-            return [IsOwner(), IsAdminUser()]
-        else:
-            return [AllowAny()]
 
 
 class CompilationViewSet(ModelViewSet):

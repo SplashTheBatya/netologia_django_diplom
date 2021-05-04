@@ -65,6 +65,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         self.fields['summary'] = serializers.IntegerField()
+        self.fields['user'] = UserSerializer(read_only=True)
         return super(OrderSerializer, self).to_representation(instance)
 
     def create(self, validated_data):

@@ -104,6 +104,17 @@ Authorization: Token e10f83219d36214193653918f1d834537777dec4
 
 ###
 
+GET localhost:8000/api/v1/orders/3/
+Content-Type: application/json
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
+
+GET localhost:8000/api/v1/orders/2/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+###
 POST localhost:8000/api/v1/orders/
 Content-Type: application/json
 Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
@@ -112,10 +123,29 @@ Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
   "position": [{"Product": 2, "amount": 2},{"Product": 1, "amount": 3}]
 }
 
+###
 
+PATCH localhost:8000/api/v1/orders/4/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+{
+  "status": "IN_PROGRESS"
+}
 
 ###
 
+DELETE localhost:8000/api/v1/orders/4/
+Content-Type: application/json
+Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
+
+###
+
+DELETE localhost:8000/api/v1/orders/2/
+Content-Type: application/json
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
 GET localhost:8000/api/v1/product-collections/
 Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
 
