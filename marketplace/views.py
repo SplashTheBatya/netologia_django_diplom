@@ -62,7 +62,6 @@ class CompilationViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = CompilationFilter
 
-    # TODO: Reformat permissions
     def get_permissions(self):
         if self.action not in ["list", "retrieve"]:
             return [IsAdminUser()]

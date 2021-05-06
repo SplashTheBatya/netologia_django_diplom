@@ -183,3 +183,15 @@ Authorization: Token 41aea63a00f9d4c31fe9bd06f6beac055630ca0e
 ###
 DELETE localhost:8000/api/v1/product-collections/4/
 Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
+
+GET localhost:8000/api/v1/product-reviews/?user=1&user=2
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
+
+GET localhost:8000/api/v1/orders/?summary__range=100,700
+Authorization: Token e10f83219d36214193653918f1d834537777dec4
+
+###
