@@ -256,3 +256,23 @@ def test_sort_reviews_by_id(api_client, review_factory):
     resp_json = resp.json()
     resp_ids = {r["id"] for r in resp_json}
     assert resp_ids == sorted_reviews
+
+
+@pytest.mark.django_db
+def test_post_review(api_client):
+    # arrange
+    url = url = reverse('review-list')
+    user = api_client
+    payload = {
+        "Product": 1,
+        "review_text": "bla bla bla",
+        "rating": 5
+    }
+
+    # act
+    review_count = Review.objects.count()
+    resp = user.post(url, payload, format="json")
+
+    # assert
+    assert resp.status_code == HTTP_201_CREATED
+    assert review_count == Review.objects.count()
