@@ -259,12 +259,15 @@ def test_sort_reviews_by_id(api_client, review_factory):
 
 
 @pytest.mark.django_db
-def test_post_review(api_client):
+def test_post_review(api_client, product_factory, get_or_create_user_token):
     # arrange
+    product, _ = Product.objects.get_or_create(product_factory())
     url = url = reverse('review-list')
     user = api_client
+    user_token = get_or_create_user_token
+    user.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
     payload = {
-        "Product": 1,
+        "product": product.id,
         "review_text": "bla bla bla",
         "rating": 5
     }
@@ -275,4 +278,25 @@ def test_post_review(api_client):
 
     # assert
     assert resp.status_code == HTTP_201_CREATED
-    assert review_count == Review.objects.count()
+    assert Review.objects.count() > review_count
+
+
+@pytest.mark.django_db
+def test_patch_review(api_client, review_factory, get_or_create_user_token):
+    # arrange
+    user = api_client
+    review = review_factory()
+    user_token = get_or_create_user_token
+    url = reverse('product-detail', args=(review.id,))
+    user.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+    payload = {
+        "rating": 3
+    }
+
+    # act
+    resp = api_client.patch(url, payload, format="json")
+    resp_json = resp.json()
+    expected_rating = payload["rating"]
+
+    # assert
+    assert resp.status_code == HTTP_403_FORBIDDEN
