@@ -89,7 +89,7 @@ url: `/api/v1/product-collections/`
 Файлы `fixture.json` с дамп-датой и список запросов `requests.http` расположены в папке `check_utils`
 
 ## Запуск проекта
-1.Необходимо создать базу данных с названием netologia_diplom или изменить в netologia_django_diplom\settings в разделе `DATABASE` параметр `NAME` на название своей базы а так же `PASSWORD` и `USER` на соответсвующие вашей базе.  
+1.Необходимо создать базу данных с названием netologia_diplom или изменить в `netologia_django_diplom\settings` в разделе `DATABASE` параметр `NAME` на название своей базы а так же `PASSWORD` и `USER` на соответсвующие вашей базе.  
 2.Совершить необходимые миграции используя команду `manage.py makemigrations`.  
 3.Запустить проект командой `manage.py runserver`.  
 
