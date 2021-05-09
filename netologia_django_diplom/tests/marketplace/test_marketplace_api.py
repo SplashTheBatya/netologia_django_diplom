@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework.status import *
-
+from django.contrib.auth.models import User
 from marketplace.models import *
 
 
@@ -282,21 +282,361 @@ def test_post_review(api_client, product_factory, get_or_create_user_token):
 
 
 @pytest.mark.django_db
-def test_patch_review(api_client, review_factory, get_or_create_user_token):
+def test_owner_patch_review(api_client, review_factory, get_or_create_user_token):
+    # arrange
+    user = get_or_create_user_token.user
+    review = review_factory(user=user)
+    user_token = get_or_create_user_token
+    url = reverse('review-detail', args=(review.id,))
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+    payload = {
+        "rating": 3
+    }
+
+    # act
+    resp = api_client.patch(url, payload, format="json", user=user)
+    resp_json = resp.json()
+    expected_rating = payload["rating"]
+
+    # assert
+    assert resp.status_code == HTTP_200_OK
+    assert resp_json["rating"] == expected_rating
+
+
+@pytest.mark.django_db
+def test_someone_else_patch_review(api_client, review_factory, get_or_create_user_token):
     # arrange
     user = api_client
     review = review_factory()
     user_token = get_or_create_user_token
-    url = reverse('product-detail', args=(review.id,))
+    url = reverse('review-detail', args=(review.id,))
     user.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
     payload = {
         "rating": 3
     }
 
     # act
-    resp = api_client.patch(url, payload, format="json")
+    resp = user.patch(url, payload, format="json")
     resp_json = resp.json()
     expected_rating = payload["rating"]
+
+    # assert
+    assert resp.status_code == HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_owner_destroy_review(api_client, review_factory, get_or_create_user_token):
+    # arrange
+    user = get_or_create_user_token.user
+    review = review_factory(user=user)
+    user_token = get_or_create_user_token
+    url = reverse('review-detail', args=(review.id,))
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+
+    # act
+    resp = api_client.delete(url)
+
+    # assert
+    assert resp.status_code == HTTP_204_NO_CONTENT
+
+
+@pytest.mark.django_db
+def test_someone_else_destroy_review(api_client, review_factory, get_or_create_user_token):
+    # arrange
+    user = api_client
+    review = review_factory()
+    user_token = get_or_create_user_token
+    url = reverse('review-detail', args=(review.id,))
+    user.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+
+    # act
+    resp = user.delete(url)
+
+    # assert
+    assert resp.status_code == HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_user_get_order(api_client, order_factory, get_or_create_user_token):
+    # arrange
+    user = get_or_create_user_token.user
+    order = order_factory(user=user)
+    user_token = get_or_create_user_token
+    url = reverse('order-detail', args=(order.id,))
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+
+    # act
+    resp = api_client.get(url, user=user)
+
+    # assert
+    assert resp.status_code == HTTP_200_OK
+    assert resp.json()["id"] == order.id
+
+
+@pytest.mark.django_db
+def test_user_get_order_list(api_client, order_factory, get_or_create_user_token):
+    # arrange
+    user = get_or_create_user_token.user
+    user_token = get_or_create_user_token
+
+    url = reverse('order-list')
+    order_1 = order_factory(user=user)
+    order_2 = order_factory()
+    order_3 = order_factory()
+
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+
+    # act
+    resp = api_client.get(url)
+
+    # assert
+    assert resp.status_code == HTTP_200_OK
+
+    resp_json = resp.json()
+    assert len(resp_json) == 1
+
+    resp_ids = {r["id"] for r in resp_json}
+    assert resp_ids == {order_1.id}
+
+
+@pytest.mark.django_db
+def test_admin_get_order_list(api_client, order_factory, get_or_create_admin_token):
+    # arrange
+    url = reverse('order-list')
+    order_1 = order_factory()
+    order_2 = order_factory()
+    order_3 = order_factory()
+
+    admin = api_client
+    admin_token = get_or_create_admin_token
+
+    admin.credentials(HTTP_AUTHORIZATION='Token ' + admin_token.key)
+
+    # act
+    resp = admin.get(url)
+
+    # assert
+    assert resp.status_code == HTTP_200_OK
+
+    resp_json = resp.json()
+    assert len(resp_json) == 3
+
+    resp_ids = {r["id"] for r in resp_json}
+    assert resp_ids == {order_1.id, order_2.id, order_3.id}
+
+
+@pytest.mark.django_db
+def test_user_patch_order(api_client, order_factory, get_or_create_user_token):
+    # arrange
+    user = get_or_create_user_token.user
+    user_token = get_or_create_user_token
+
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+    order = order_factory(user=user)
+    url = reverse('order-detail', args=(order.id,))
+    payload = {
+        "status": "DONE"
+    }
+
+    # act
+    resp = api_client.patch(url, payload, format="json", user=user)
+    resp_json = resp.json()
+    expected_rating = payload["status"]
+
+    # assert
+    assert resp.status_code == HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_admin_patch_order(api_client, order_factory, get_or_create_admin_token):
+    # arrange
+    order = order_factory()
+    url = reverse('order-detail', args=(order.id,))
+
+    admin = api_client
+    admin_token = get_or_create_admin_token
+
+    admin.credentials(HTTP_AUTHORIZATION='Token ' + admin_token.key)
+    payload = {
+        "status": "DONE"
+    }
+
+    # act
+    resp = api_client.patch(url, payload, format="json")
+    resp_json = resp.json()
+    expected_status = payload["status"]
+
+    # assert
+    assert resp.status_code == HTTP_200_OK
+    assert resp_json["status"] == expected_status
+
+
+@pytest.mark.django_db
+def test_destroy_order(api_client, order_factory, get_or_create_user_token):
+    # arrange
+    user = get_or_create_user_token.user
+    order = order_factory(user=user)
+    url = reverse('order-detail', args=(order.id,))
+
+    user_token = get_or_create_user_token
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+
+    # act
+    resp = api_client.delete(url)
+
+    # assert
+    assert resp.status_code == HTTP_204_NO_CONTENT
+
+
+@pytest.mark.django_db
+def test_get_compilations(api_client, compilation_factory):
+    # arrange
+    compilation = compilation_factory()
+    url = reverse('compilation-detail', args=(compilation.id,))
+
+    # act
+    resp = api_client.get(url)
+
+    # assert
+    assert resp.status_code == HTTP_200_OK
+    assert resp.json()["id"] == compilation.id
+
+
+@pytest.mark.django_db
+def test_get_compilation_list(api_client, compilation_factory):
+    # arrange
+    compilation_1 = compilation_factory()
+    compilation_2 = compilation_factory()
+    url = reverse('compilation-list')
+
+    # act
+    resp = api_client.get(url)
+
+    # assert
+    assert resp.status_code == HTTP_200_OK
+
+    resp_json = resp.json()
+    assert len(resp_json) == 2
+
+    resp_ids = {r["id"] for r in resp_json}
+    assert resp_ids == {compilation_1.id, compilation_2.id}
+
+
+@pytest.mark.django_db
+def test_admin_post_compilation(api_client, get_or_create_admin_token, product_factory):
+    # arrange
+    admin_token = get_or_create_admin_token
+    admin = api_client
+    product_1, _ = Product.objects.get_or_create(product_factory())
+
+    admin.credentials(HTTP_AUTHORIZATION='Token ' + admin_token.key)
+    url = reverse('compilation-list')
+    payload = {
+        "heading": "Compilation 5",
+        "description": "Some compilation bla bla bla",
+        "product": [product_1.id]
+    }
+
+    # act
+    compilations_count = Compilation.objects.count()
+    resp = admin.post(url, payload, format="json")
+
+    # assert
+    assert resp.status_code == HTTP_201_CREATED
+    assert Compilation.objects.count() > compilations_count
+
+
+@pytest.mark.django_db
+def test_user_post_compilation(api_client, get_or_create_user_token, product_factory):
+    # arrange
+    url = reverse('compilation-list')
+    product_1, _ = Product.objects.get_or_create(product_factory())
+
+    user_token = get_or_create_user_token
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+    payload = {
+        "heading": "Compilation 5",
+        "description": "Some compilation bla bla bla",
+        "product": [product_1.id]
+    }
+
+    # act
+    resp = api_client.post(url, payload, format="json")
+
+    # assert
+    assert resp.status_code == HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_admin_destroy_compilation(api_client, get_or_create_admin_token, compilation_factory):
+    # arrange
+    compilation = compilation_factory()
+    admin = api_client
+    admin_token = get_or_create_admin_token
+
+    admin.credentials(HTTP_AUTHORIZATION='Token ' + admin_token.key)
+    url = reverse('compilation-detail', args=(compilation.id,))
+
+    # act
+    resp = api_client.delete(url)
+
+    # assert
+    assert resp.status_code == HTTP_204_NO_CONTENT
+
+
+@pytest.mark.django_db
+def test_user_destroy_compilation(api_client, get_or_create_user_token, compilation_factory):
+    # arrange
+    compilation = compilation_factory()
+    user = api_client
+    admin_token = get_or_create_user_token
+
+    user.credentials(HTTP_AUTHORIZATION='Token ' + admin_token.key)
+    url = reverse('compilation-detail', args=(compilation.id,))
+
+    # act
+    resp = api_client.delete(url)
+
+    # assert
+    assert resp.status_code == HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_admin_patch_compilation(api_client, get_or_create_admin_token, product_factory, compilation_factory):
+    # arrange
+    admin_token = get_or_create_admin_token
+    admin = api_client
+    product_1, _ = Product.objects.get_or_create(product_factory())
+    compilation = compilation_factory()
+
+    admin.credentials(HTTP_AUTHORIZATION='Token ' + admin_token.key)
+    url = reverse('compilation-detail', args=(compilation.id, ))
+    payload = {
+        "product": [product_1.id]
+    }
+
+    # act
+    resp = admin.patch(url, payload, format="json")
+
+    # assert
+    assert resp.status_code == HTTP_200_OK
+
+
+@pytest.mark.django_db
+def test_user_patch_compilation(api_client, get_or_create_user_token, product_factory, compilation_factory):
+    # arrange
+    product_1, _ = Product.objects.get_or_create(product_factory())
+    compilation = compilation_factory()
+    url = reverse('compilation-detail', args=(compilation.id, ))
+
+    user_token = get_or_create_user_token
+    api_client.credentials(HTTP_AUTHORIZATION='Token ' + user_token.key)
+    payload = {
+        "product": [product_1.id]
+    }
+
+    # act
+    resp = api_client.patch(url, payload, format="json")
 
     # assert
     assert resp.status_code == HTTP_403_FORBIDDEN

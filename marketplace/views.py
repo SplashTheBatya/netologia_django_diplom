@@ -43,7 +43,6 @@ class OrderViewSet(ModelViewSet):
 
     filter_backends = [DjangoFilterBackend]
     filterset_class = OrderFilter
-    permission_classes = [IsAuthenticated]
 
     def filter_queryset(self, queryset):
         return super().filter_queryset(queryset)
@@ -53,6 +52,12 @@ class OrderViewSet(ModelViewSet):
             return Order.objects.all()
         else:
             return Order.objects.all().filter(user=self.request.user)
+
+    def get_permissions(self):
+        if self.action in ["update", "partial_update"]:
+            return [IsAdminUser()]
+        else:
+            return [IsAuthenticated()]
 
 
 class CompilationViewSet(ModelViewSet):

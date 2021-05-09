@@ -38,3 +38,19 @@ def review_factory():
         return baker.make('marketplace.Review', **kwargs)
 
     return factory
+
+
+@pytest.fixture
+def order_factory():
+    def factory(**kwargs):
+        return baker.make('marketplace.Order', **kwargs)
+
+    return factory
+
+
+@pytest.fixture
+def compilation_factory():
+    def factory(**kwargs):
+        return baker.make('marketplace.Compilation', **kwargs)
+
+    return factory
