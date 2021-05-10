@@ -90,7 +90,7 @@ url: `/api/v1/product-collections/`
 
 ## Запуск проекта
 1.Необходимо создать базу данных с названием netologia_diplom или изменить в `netologia_django_diplom\settings` в разделе `DATABASE` параметр `NAME` на название своей базы а так же `PASSWORD` и `USER` на соответсвующие вашей базе.
-2.Установить необходимые модули с помощью команды `pip install -r requirements-dev.txt`  
+2.Установить необходимые модули с помощью команды `pip install -r requirements-dev.txt`   
 3.Совершить необходимые миграции используя команду `manage.py makemigrations`.  
 4.Запустить проект командой `manage.py runserver`.  
 
