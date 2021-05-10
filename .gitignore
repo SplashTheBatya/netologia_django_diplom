@@ -1,0 +1,10 @@
+# Python venv
+venv/
+.venv/
+
+# Environments
+*.env
+
+# Idea
+.idea/
+__pycache__/
